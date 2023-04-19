@@ -72,18 +72,22 @@ const table = {
 
     template: function () {
         const catagories = this.catagories();
-        let template = `<thead><tr><th scope="col">#</th>`
-        catagories.forEach(catagory => {
-            template += `<th scope="col" style="cursor:pointer;" onclick="table.onClick('${catagory}');return false;">${catagory}</th>`
-        });
-        template += `</tr></thead><tbody>`;
-        this.employees.forEach((employee, index) => {
-            template += `<tr><th scope="row">${index + 1}</th>`
-            catagories.forEach(catagory => {
-                template += `<td>${employee[catagory] === null ? "" : employee[catagory]}</td>`
-            });
-        })
-        template += `</tr>`
+        let template = `
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            ${catagories.map(catagory => `<th scope="col" style="cursor:pointer;" onclick="table.onClick('${catagory}');return false;">${catagory}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${this.employees.map((employee, index) => `
+            <tr>
+              <th scope="row">${index + 1}</th>
+              ${catagories.map(catagory => `<td>${employee[catagory] === null ? "" : employee[catagory]}</td>`).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
 
         return template;
     }

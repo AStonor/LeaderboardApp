@@ -1,4 +1,11 @@
 
+
+const auth = {
+    url : "",
+    user : "",
+    password : ""
+}
+
 const podio = {
 
     el: document.getElementById("topthree"),
@@ -36,18 +43,6 @@ const table = {
         return Object.keys(this.employees[0]);
     },
 
-    sortEmployees: function () {
-        this.employees.sort((a, b) => {
-            if (a[this.sortedBy] == b[this.sortedBy]) {
-                return 0
-            } else if (this.sortedFromMaxToMin && a[this.sortedBy] > b[this.sortedBy] || !this.sortedFromMaxToMin && a[this.sortedBy] < b[this.sortedBy]) {
-                return -1;
-            } else {
-                return 1;
-            }
-        })
-    },
-
     onClick: function (clickedCatagory) {
         this.sortedBy === clickedCatagory ? this.sortedFromMaxToMin = !this.sortedFromMaxToMin : this.sortedBy = clickedCatagory;
         this.update();
@@ -60,8 +55,19 @@ const table = {
     },
 
     fetchData: async function () {
-        const data = await fetch("../json/employees.json");
+        const data = await fetch(auth.url, {
+            headers: { 'Authorization': 'Basic ' + btoa(auth.user + ":" + auth.password) }
+        });
         return data.json();
+    }, 
+
+    sortEmployees: function () {
+        this.employees.sort((a, b) => {
+            if (a[this.sortedBy] == b[this.sortedBy]) return 0
+            if (this.sortedFromMaxToMin && a[this.sortedBy] > b[this.sortedBy] || !this.sortedFromMaxToMin && a[this.sortedBy] < b[this.sortedBy])
+                return -1;
+            return 1;
+        })
     },
 
     template: function () {
@@ -80,7 +86,6 @@ const table = {
         template += `</tr>`
 
         return template;
-
     }
 }
 

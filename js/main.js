@@ -23,10 +23,12 @@ const table = {
 
     el: document.getElementById("table"),
 
+    columns : {Employee_ID : "Employee Id", name: "Name", client: "Client", country : "Country", retailer: "Retailer", store: "Store", academy: "Academy", challange: "Challange", manual_points: "Manual Points", total: "Total"},
+
     sortedBy: "total",
 
     sortedFromMaxToMin: true,
-
+ 
     init: async function () {
         this.employees = await this.fetchData();
         this.calcAndAddTotalToEmployees();
@@ -37,10 +39,6 @@ const table = {
     update: function () {
         this.sortEmployees();
         this.el.innerHTML = this.template();
-    },
-
-    catagories: function () {
-        return Object.keys(this.employees[0]);
     },
 
     onClick: function (clickedCatagory) {
@@ -63,7 +61,8 @@ const table = {
 
     sortEmployees: function () {
         this.employees.sort((a, b) => {
-            if (a[this.sortedBy] == b[this.sortedBy]) return 0
+            if (a[this.sortedBy] == b[this.sortedBy]) 
+               return this.sortedFromMaxToMin && a.name > b.name || !this.sortedFromMaxToMin && a.name < b.name ? -1 : 1; 
             if (this.sortedFromMaxToMin && a[this.sortedBy] > b[this.sortedBy] || !this.sortedFromMaxToMin && a[this.sortedBy] < b[this.sortedBy])
                 return -1;
             return 1;
@@ -71,25 +70,22 @@ const table = {
     },
 
     template: function () {
-        const catagories = this.catagories();
-        let template = `
+        return `
         <thead>
           <tr>
             <th scope="col">#</th>
-            ${catagories.map(catagory => `<th scope="col" style="cursor:pointer;" onclick="table.onClick('${catagory}');return false;">${catagory}</th>`).join('')}
+            ${Object.entries(this.columns).map(([key, value]) => `<th scope="col" style="cursor:pointer;" onclick="table.onClick('${key}');return false;">${value}</th>`).join('')}
           </tr>
         </thead>
         <tbody>
           ${this.employees.map((employee, index) => `
             <tr>
               <th scope="row">${index + 1}</th>
-              ${catagories.map(catagory => `<td>${employee[catagory] === null ? "" : employee[catagory]}</td>`).join('')}
+              ${Object.keys(this.columns).map(column => `<td>${employee[column] === null ? "" : employee[column]}</td>`).join('')}
             </tr>
           `).join('')}
         </tbody>
-      `;
-
-        return template;
+      `
     }
 }
 

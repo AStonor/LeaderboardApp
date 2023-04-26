@@ -1,12 +1,12 @@
 
 
 const auth = {
-    url : "",
-    user : "",
-    password : ""
+    url: "",
+    user: "",
+    password: ""
 }
 
-const podio = {
+const podium = {
 
     el: document.getElementById("topthree"),
 
@@ -21,49 +21,52 @@ const podio = {
 
 const table = {
 
-    el: document.getElementById("table"),
-
-    columns : {Employee_ID : "Employee Id", name: "Name", client: "Client", country : "Country", retailer: "Retailer", store: "Store", academy: "Academy", challange: "Challange", manual_points: "Manual Points", total: "Total"},
+    el: document?.getElementById("table"),
 
     sortedBy: "total",
 
-    sortedFromMaxToMin: true,
- 
+    sortedInDescendingOrder: true,
+
+    columns: { Employee_ID: "Employee Id", name: "Name", client: "Client", country: "Country", retailer: "Retailer", store: "Store", academy: "Academy", challange: "Challange", manual_points: "Manual Points", total: "Total" },
+
     init: async function () {
         this.employees = await this.fetchData();
         this.calcAndAddTotalToEmployees();
         this.update();
-        podio.init(this.employees);
+        podium.init(this.employees);
     },
 
     update: function () {
         this.sortEmployees();
-        this.el.innerHTML = this.template();
+        if (this.el) this.el.innerHTML = this.template();
     },
 
-    onClick: function (clickedCatagory) {
-        this.sortedBy === clickedCatagory ? this.sortedFromMaxToMin = !this.sortedFromMaxToMin : this.sortedBy = clickedCatagory;
+    onClick: function (column) {
+        this.sortedBy === column ? this.sortedInDescendingOrder = !this.sortedInDescendingOrder : this.sortedBy = column;
         this.update();
     },
 
     calcAndAddTotalToEmployees: function () {
         this.employees.forEach(employee => {
+            if(!employee.academy || isNaN(employee.academy)) employee.academy = 0;
+            if(!employee.challange || isNaN(employee.challange)) employee.challange = 0;
             employee.total = employee.academy + employee.challange;
         })
     },
 
     fetchData: async function () {
-        const data = await fetch(auth.url, {
-            headers: { 'Authorization': 'Basic ' + btoa(auth.user + ":" + auth.password) }
+        const response = await fetch(auth.url, {
+            headers: { 'Authorization': 'Basic ' + btoa(`${auth.user}:${auth.password}`) }
         });
-        return data.json();
-    }, 
+        return response.json();
+    },
 
     sortEmployees: function () {
+        if (typeof this.sortedInDescendingOrder !== "boolean")
+            throw new Error(`Variable sortedInDescendingOrder is not a boolean (${this.sortedInDescendingOrder}).`);
         this.employees.sort((a, b) => {
-            if (a[this.sortedBy] == b[this.sortedBy]) 
-               return this.sortedFromMaxToMin && a.name > b.name || !this.sortedFromMaxToMin && a.name < b.name ? -1 : 1; 
-            if (this.sortedFromMaxToMin && a[this.sortedBy] > b[this.sortedBy] || !this.sortedFromMaxToMin && a[this.sortedBy] < b[this.sortedBy])
+            if (a[this.sortedBy] === b[this.sortedBy]) return a.name < b.name ? -1 : 1;
+            if (this.sortedInDescendingOrder && a[this.sortedBy] > b[this.sortedBy] || !this.sortedInDescendingOrder && a[this.sortedBy] < b[this.sortedBy])
                 return -1;
             return 1;
         })
@@ -81,7 +84,7 @@ const table = {
           ${this.employees.map((employee, index) => `
             <tr>
               <th scope="row">${index + 1}</th>
-              ${Object.keys(this.columns).map(column => `<td>${employee[column] === null ? "" : employee[column]}</td>`).join('')}
+              ${Object.keys(this.columns).map(column => `<td>${employee[column] ?? ""}</td>`).join('')}
             </tr>
           `).join('')}
         </tbody>
@@ -89,5 +92,17 @@ const table = {
     }
 }
 
-table.init();
+
+window.addEventListener("DOMContentLoaded", (event) => {
+    table.init();
+});
+
+
+module.exports = table;
+
+
+
+
+
+
 

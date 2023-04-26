@@ -1,27 +1,24 @@
 
 
 const auth = {
-    url: "",
-    user: "",
-    password: ""
+    url: "", 
+    user: "", 
+    password: "" 
 }
 
 const podium = {
-
-    el: document.getElementById("topthree"),
-
     init: function (employeesSorted) {
+        this.el = document.getElementById("topthree");
         [this.el.childNodes[3], this.el.childNodes[1], this.el.childNodes[5]].forEach((el, index) => {
-            el.childNodes[3].innerText = employeesSorted[index].total;
-            el.childNodes[5].innerText = employeesSorted[index].name;
+            el.querySelector(".points").innerText = employeesSorted[index].total;
+            el.querySelector(".name").innerText = employeesSorted[index].name;
         })
 
     }
 }
 
-const table = {
 
-    el: document?.getElementById("table"),
+const table = {
 
     sortedBy: "total",
 
@@ -29,7 +26,10 @@ const table = {
 
     columns: { Employee_ID: "Employee Id", name: "Name", client: "Client", country: "Country", retailer: "Retailer", store: "Store", academy: "Academy", challange: "Challange", manual_points: "Manual Points", total: "Total" },
 
+    sortHierarchy : ["total", "academy", "challange", "manual_points", "name"],
+
     init: async function () {
+        this.el = document.getElementById("table");
         this.employees = await this.fetchData();
         this.calcAndAddTotalToEmployees();
         this.update();
@@ -61,15 +61,18 @@ const table = {
         return response.json();
     },
 
+    employeeComparer: function(a, b, sortedBy, hierarchyIndex) {
+        let currentHierarchyIndex = hierarchyIndex + 1; 
+        if (a[sortedBy] === b[sortedBy])
+            return currentHierarchyIndex < this.sortHierarchy.length ? 
+                this.employeeComparer(a, b, this.sortHierarchy[currentHierarchyIndex], currentHierarchyIndex) : 0;      
+        if (this.sortedInDescendingOrder && a[sortedBy] > b[sortedBy] || !this.sortedInDescendingOrder && a[sortedBy] < b[sortedBy])
+            return -1;
+        return 1;
+    },
+
     sortEmployees: function () {
-        if (typeof this.sortedInDescendingOrder !== "boolean")
-            throw new Error(`Variable sortedInDescendingOrder is not a boolean (${this.sortedInDescendingOrder}).`);
-        this.employees.sort((a, b) => {
-            if (a[this.sortedBy] === b[this.sortedBy]) return a.name < b.name ? -1 : 1;
-            if (this.sortedInDescendingOrder && a[this.sortedBy] > b[this.sortedBy] || !this.sortedInDescendingOrder && a[this.sortedBy] < b[this.sortedBy])
-                return -1;
-            return 1;
-        })
+           this.employees.sort((a, b) => this.employeeComparer(a, b, this.sortedBy, -1))
     },
 
     template: function () {
@@ -93,12 +96,9 @@ const table = {
 }
 
 
-window.addEventListener("DOMContentLoaded", (event) => {
+window.addEventListener("DOMContentLoaded", () => {
     table.init();
 });
-
-
-module.exports = table;
 
 
 
